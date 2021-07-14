@@ -54,13 +54,14 @@ namespace Google.Cloud.Spanner.Data.Tests
             { "BoolField", SpannerDbType.Bool, true },
             { "DateField", SpannerDbType.Date, new DateTime(2017, 1, 31) },
             { "TimestampField", SpannerDbType.Timestamp, new DateTime(2017, 1, 31, 3, 15, 30) },
-            { "NumericField", SpannerDbType.Numeric, SpannerNumeric.MaxValue }
+            { "NumericField", SpannerDbType.Numeric, SpannerNumeric.MaxValue },
+            { "JsonField", SpannerDbType.Json, "{\"field\": \"value\"}" }
         };
 
         // Structs are serialized as lists of their values. The field names aren't present, as they're
         // specified in the type.
         private static readonly string s_sampleStructSerialized =
-            "[ \"stringValue\", \"2\", \"NaN\", true, \"2017-01-31\", \"2017-01-31T03:15:30Z\", \"99999999999999999999999999999.999999999\" ]";
+            "[ \"stringValue\", \"2\", \"NaN\", true, \"2017-01-31\", \"2017-01-31T03:15:30Z\", \"99999999999999999999999999999.999999999\", \"{\\\"field\\\": \\\"value\\\"}\" ]";
 
         private static string Quote(string s) => $"\"{s}\"";
 
@@ -111,6 +112,13 @@ namespace Google.Cloud.Spanner.Data.Tests
             yield return SpannerNumeric.MinValue;
             yield return SpannerNumeric.Epsilon;
             yield return SpannerNumeric.MaxValue;
+        }
+
+        private static IEnumerable<string> GetJsonStringsForArray()
+        {
+            yield return "";
+            yield return "{\"field1\": \"value1\"}";
+            yield return "[]";
         }
 
         private static void WithCulture(CultureInfo culture, Action action)
@@ -312,6 +320,12 @@ namespace Google.Cloud.Spanner.Data.Tests
             {
                 new List<SpannerNumeric>(GetSpannerNumericsForArray()), SpannerDbType.ArrayOf(SpannerDbType.Numeric),
                 "[ \"-99999999999999999999999999999.999999999\", \"0.000000001\", \"99999999999999999999999999999.999999999\" ]"
+            };
+            // JSON can not be converted from Value to Clr, as there is no unique Clr type for JSON.
+            yield return new object[]
+            {
+                new List<string>(GetJsonStringsForArray()), SpannerDbType.ArrayOf(SpannerDbType.Json),
+                "[ \"\", \"{\\\"field1\\\": \\\"value1\\\"}\", \"[]\" ]", TestType.ClrToValue
             };
 
             // List test cases (various source/target list types)

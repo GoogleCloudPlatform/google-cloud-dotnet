@@ -30,25 +30,53 @@ namespace Google.Cloud.Spanner.Data.IntegrationTests
 
         protected override void CreateTable()
         {
-            ExecuteDdl($@"CREATE TABLE {TableName}(
-                            K                   STRING(MAX) NOT NULL,
-                            BoolValue           BOOL,
-                            Int64Value          INT64,
-                            Float64Value        FLOAT64,
-                            NumericValue        NUMERIC,
-                            StringValue         STRING(MAX),
-                            BytesValue          BYTES(MAX),
-                            TimestampValue      TIMESTAMP,
-                            DateValue           DATE,
-                            BoolArrayValue      ARRAY<BOOL>,
-                            Int64ArrayValue     ARRAY<INT64>,
-                            Float64ArrayValue   ARRAY<FLOAT64>,
-                            NumericArrayValue   ARRAY<NUMERIC>,
-                            StringArrayValue    ARRAY < STRING(MAX) >,
-                            BytesArrayValue     ARRAY < BYTES(MAX) >,
-                            TimestampArrayValue ARRAY<TIMESTAMP>,
-                            DateArrayValue      ARRAY<DATE>,
-                        ) PRIMARY KEY(K)");
+            // The emulator doesn't yet support the JSON type.
+            if (RunningOnEmulator)
+            {
+                ExecuteDdl($@"CREATE TABLE {TableName}(
+                              K                   STRING(MAX) NOT NULL,
+                              BoolValue           BOOL,
+                              Int64Value          INT64,
+                              Float64Value        FLOAT64,
+                              StringValue         STRING(MAX),
+                              NumericValue        NUMERIC,
+                              BytesValue          BYTES(MAX),
+                              TimestampValue      TIMESTAMP,
+                              DateValue           DATE,
+                              BoolArrayValue      ARRAY<BOOL>,
+                              Int64ArrayValue     ARRAY<INT64>,
+                              Float64ArrayValue   ARRAY<FLOAT64>,
+                              NumericArrayValue   ARRAY<NUMERIC>,
+                              StringArrayValue    ARRAY<STRING(MAX)>,
+                              BytesArrayValue     ARRAY<BYTES(MAX)>,
+                              TimestampArrayValue ARRAY<TIMESTAMP>,
+                              DateArrayValue      ARRAY<DATE>,
+                            ) PRIMARY KEY(K)");
+            }
+            else
+            {
+                ExecuteDdl($@"CREATE TABLE {TableName}(
+                              K                   STRING(MAX) NOT NULL,
+                              BoolValue           BOOL,
+                              Int64Value          INT64,
+                              Float64Value        FLOAT64,
+                              NumericValue        NUMERIC,
+                              StringValue         STRING(MAX),
+                              BytesValue          BYTES(MAX),
+                              TimestampValue      TIMESTAMP,
+                              DateValue           DATE,
+                              JsonValue           JSON,
+                              BoolArrayValue      ARRAY<BOOL>,
+                              Int64ArrayValue     ARRAY<INT64>,
+                              Float64ArrayValue   ARRAY<FLOAT64>,
+                              NumericArrayValue   ARRAY<NUMERIC>,
+                              StringArrayValue    ARRAY<STRING(MAX)>,
+                              BytesArrayValue     ARRAY<BYTES(MAX)>,
+                              TimestampArrayValue ARRAY<TIMESTAMP>,
+                              DateArrayValue      ARRAY<DATE>,
+                              JsonArrayValue      ARRAY<JSON>,
+                            ) PRIMARY KEY(K)");
+            }
         }
     }
 }

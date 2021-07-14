@@ -162,6 +162,12 @@ namespace Google.Cloud.Spanner.Data
                         throw new ArgumentException("SpannerStruct cannot be used for string parameters", nameof(value));
                     }
                     return new Value { StringValue = Convert.ToString(value, InvariantCulture) };
+                case TypeCode.Json:
+                    if (value is string jsonString)
+                    {
+                        return new Value { StringValue = jsonString };
+                    }
+                    throw new ArgumentException("TypeCode.Json only supports string", nameof(value));
                 case TypeCode.Int64:
                         return new Value { StringValue = Convert.ToInt64(value, InvariantCulture)
                             .ToString(InvariantCulture) };

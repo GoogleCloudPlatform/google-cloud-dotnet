@@ -43,9 +43,10 @@ namespace Google.Cloud.Spanner.Data.IntegrationTests
         }
 
         [MemberData(nameof(SchemaTestData))]
-        [Theory]
+        [SkippableTheory]
         public async Task GetSchemaTable_WithFlagEnabled_ReturnsSchema(string columnName, System.Type type, SpannerDbType spannerDbType)
         {
+            Skip.If(_fixture.RunningOnEmulator && (SpannerDbType.Json.Equals(spannerDbType) || SpannerDbType.ArrayOf(SpannerDbType.Json).Equals(spannerDbType)), "The emulator does not support the JSON type");
             using (var connection = new SpannerConnection($"{_fixture.ConnectionString};EnableGetSchemaTable=true"))
             {
                 var command = connection.CreateSelectCommand($"SELECT {columnName} FROM {_fixture.TableName}");
@@ -80,6 +81,7 @@ namespace Google.Cloud.Spanner.Data.IntegrationTests
                 { "BytesValue", typeof(byte[]), SpannerDbType.Bytes },
                 { "TimestampValue", typeof(DateTime), SpannerDbType.Timestamp },
                 { "DateValue", typeof(DateTime), SpannerDbType.Date },
+                { "JsonValue", typeof(string), SpannerDbType.Json },
                 // Array types.
                 { "BoolArrayValue", typeof(List<bool>), SpannerDbType.ArrayOf(SpannerDbType.Bool) },
                 { "Int64ArrayValue", typeof(List<long>), SpannerDbType.ArrayOf(SpannerDbType.Int64) },
@@ -89,6 +91,7 @@ namespace Google.Cloud.Spanner.Data.IntegrationTests
                 { "BytesArrayValue", typeof(List<byte[]>), SpannerDbType.ArrayOf(SpannerDbType.Bytes) },
                 { "TimestampArrayValue", typeof(List<DateTime>), SpannerDbType.ArrayOf(SpannerDbType.Timestamp) },
                 { "DateArrayValue", typeof(List<DateTime>), SpannerDbType.ArrayOf(SpannerDbType.Date) },
+                { "JsonArrayValue", typeof(List<string>), SpannerDbType.ArrayOf(SpannerDbType.Json) },
             };
 
         [Fact]
@@ -101,8 +104,9 @@ namespace Google.Cloud.Spanner.Data.IntegrationTests
                 {
                     var table = reader.GetSchemaTable();
                     // The table also contains the `K` column that is the primary key.
-                    Assert.Equal(SchemaTestData.Count() + 1, table.Rows.Count);
-                    for (var ordinal = 1; ordinal <= SchemaTestData.Count(); ordinal++)
+                    var expectedRowCount = _fixture.RunningOnEmulator ? SchemaTestData.Count() - 1 : SchemaTestData.Count() + 1;
+                    Assert.Equal(expectedRowCount, table.Rows.Count);
+                    for (var ordinal = 1; ordinal < expectedRowCount; ordinal++)
                     {
                         var row = table.Rows[ordinal];
                         Assert.Equal(ordinal, (int)row["ColumnOrdinal"]);

@@ -142,7 +142,7 @@ namespace Google.Cloud.Spanner.Data
                     $"{nameof(SpannerDbType)} must be set to one of "
                     + $"({nameof(SpannerDbType.Bool)}, {nameof(SpannerDbType.Int64)}, {nameof(SpannerDbType.Float64)},"
                     + $" {nameof(SpannerDbType.Timestamp)}, {nameof(SpannerDbType.Date)}, {nameof(SpannerDbType.String)},"
-                    + $" {nameof(SpannerDbType.Bytes)}, {nameof(SpannerDbType.Numeric)})");
+                    + $" {nameof(SpannerDbType.Bytes)}, {nameof(SpannerDbType.Json)}, {nameof(SpannerDbType.Numeric)})");
             }
             return Value;
         }

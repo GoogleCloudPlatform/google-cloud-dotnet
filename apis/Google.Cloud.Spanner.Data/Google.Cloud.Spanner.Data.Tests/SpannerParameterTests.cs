@@ -24,31 +24,36 @@ namespace Google.Cloud.Spanner.Data.Tests
     {
         public static IEnumerable<object[]> GetDbTypeConversions()
         {
-            yield return new object[] { SpannerDbType.Bytes, DbType.Binary };
-            yield return new object[] { SpannerDbType.Bool, DbType.Boolean };
-            yield return new object[] { SpannerDbType.Date, DbType.Date };
-            yield return new object[] { SpannerDbType.Timestamp, DbType.DateTime };
-            yield return new object[] { SpannerDbType.Float64, DbType.Double };
-            yield return new object[] { SpannerDbType.Int64, DbType.Int64 };
-            yield return new object[] { SpannerDbType.Numeric, DbType.VarNumeric };
-            yield return new object[] { SpannerDbType.Unspecified, DbType.Object };
-            yield return new object[] { SpannerDbType.String, DbType.String };
+            yield return new object[] { SpannerDbType.Bytes, DbType.Binary, true };
+            yield return new object[] { SpannerDbType.Bool, DbType.Boolean, true };
+            yield return new object[] { SpannerDbType.Date, DbType.Date, true };
+            yield return new object[] { SpannerDbType.Timestamp, DbType.DateTime, true };
+            yield return new object[] { SpannerDbType.Float64, DbType.Double, true };
+            yield return new object[] { SpannerDbType.Int64, DbType.Int64, true };
+            yield return new object[] { SpannerDbType.Numeric, DbType.VarNumeric, true };
+            yield return new object[] { SpannerDbType.Unspecified, DbType.Object, true };
+            yield return new object[] { SpannerDbType.String, DbType.String, true };
+            // There is no DbType that will map automatically to SpannerDbType.Json.
+            yield return new object[] { SpannerDbType.Json, DbType.String, false };
         }
 
         [Theory]
         [MemberData(nameof(GetDbTypeConversions))]
-        public void DbTypeMappings(SpannerDbType spannerType, DbType adoType)
+        public void DbTypeMappings(SpannerDbType spannerType, DbType adoType, bool hasUniqueDbType)
         {
             var parameter = new SpannerParameter { SpannerDbType = spannerType };
             Assert.Equal(adoType, parameter.DbType);
 
-            parameter.ResetDbType();
+            if (hasUniqueDbType)
+            {
+                parameter.ResetDbType();
 
-            parameter.DbType = adoType;
-            Assert.Equal(spannerType, parameter.SpannerDbType);
+                parameter.DbType = adoType;
+                Assert.Equal(spannerType, parameter.SpannerDbType);
+            }
         }
 
-        // TODO: There is no value that will default to Spanner type DATE.
+        // TODO: There are no values that will default to Spanner types DATE and JSON.
         public static IEnumerable<object[]> GetValueConversions()
         {
             yield return new object[] { new byte[] { 1 }, SpannerDbType.Bytes, DbType.Binary, typeof(byte[]) };
@@ -118,6 +123,7 @@ namespace Google.Cloud.Spanner.Data.Tests
             yield return new object[] { SpannerDbType.Float64, 0 };
             yield return new object[] { SpannerDbType.Int64, 0 };
             yield return new object[] { SpannerDbType.Timestamp, 0 };
+            yield return new object[] { SpannerDbType.Json, 0 };
         }
 
         [Theory]

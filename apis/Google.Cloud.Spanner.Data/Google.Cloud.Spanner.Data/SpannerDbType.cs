@@ -71,6 +71,11 @@ namespace Google.Cloud.Spanner.Data
         public static SpannerDbType Bytes { get; } = new SpannerDbType(TypeCode.Bytes);
 
         /// <summary>
+        /// A JSON-formatted string as described in RFC 7159.
+        /// </summary>
+        public static SpannerDbType Json { get; } = new SpannerDbType(TypeCode.Json);
+
+        /// <summary>
         /// A fixed-point number with 29 decimal digits of precision in the whole component and 9 decimal digits of precision in the fractional component.
         /// </summary>
         public static SpannerDbType Numeric { get; } = new SpannerDbType(TypeCode.Numeric);
@@ -86,6 +91,7 @@ namespace Google.Cloud.Spanner.Data
                 {TypeCode.Date, Date },
                 {TypeCode.String, String },
                 {TypeCode.Bytes, Bytes },
+                {TypeCode.Json, Json },
                 {TypeCode.Numeric, Numeric }
             };
 
@@ -150,6 +156,8 @@ namespace Google.Cloud.Spanner.Data
                         return DbType.String;
                     case TypeCode.Bytes:
                         return DbType.Binary;
+                    case TypeCode.Json:
+                        return DbType.String;
                     default:
                         return DbType.Object;
                 }
@@ -184,6 +192,8 @@ namespace Google.Cloud.Spanner.Data
                         return typeof(SpannerStruct);
                     case TypeCode.Numeric:
                         return typeof(SpannerNumeric);
+                    case TypeCode.Json:
+                        return typeof(string);
                     default:
                         //if we don't recognize it (or its a struct), we use the google native wellknown type.
                         return typeof(Value);

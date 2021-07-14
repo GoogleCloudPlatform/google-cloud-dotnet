@@ -79,6 +79,7 @@ namespace Google.Cloud.Spanner.Data.IntegrationTests
             long?[] lArray = { 0, null, 1 };
             double?[] dArray = { 0.0, null, 2.0 };
             SpannerNumeric?[] nArray = { SpannerNumeric.Parse("0.0"), null, SpannerNumeric.Parse("2.0") };
+            string[] jsonArray = { "{\"f1\":\"v1\"}", "{}", "[]", null };
             string[] sArray = { "abc", null, "123" };
             string[] bArrayArray =
             {
@@ -109,6 +110,13 @@ namespace Google.Cloud.Spanner.Data.IntegrationTests
                 { "NumericArrayValue", SpannerDbType.ArrayOf(SpannerDbType.Numeric), nArray }
             };
 
+            // The emulator doesn't yet support the JSON type.
+            if (!_fixture.RunningOnEmulator)
+            {
+                parameters.Add("JsonValue", SpannerDbType.Json, "{\"f1\":\"v1\"}");
+                parameters.Add("JsonArrayValue", SpannerDbType.ArrayOf(SpannerDbType.Json), jsonArray);
+            }
+
             Assert.Equal(1, await InsertAsync(parameters));
             await WithLastRowAsync(reader =>
             {
@@ -130,6 +138,11 @@ namespace Google.Cloud.Spanner.Data.IntegrationTests
                 Assert.Equal(tmArray, reader.GetFieldValue<DateTime?[]>(reader.GetOrdinal("TimestampArrayValue")));
                 Assert.Equal(dtArray, reader.GetFieldValue<DateTime?[]>(reader.GetOrdinal("DateArrayValue")));
                 Assert.Equal(nArray, reader.GetFieldValue<SpannerNumeric?[]>(reader.GetOrdinal("NumericArrayValue")));
+                if (!_fixture.RunningOnEmulator)
+                {
+                    Assert.Equal("{\"f1\":\"v1\"}", reader.GetFieldValue<string>(reader.GetOrdinal("JsonValue")));
+                    Assert.Equal(jsonArray, reader.GetFieldValue<string[]>(reader.GetOrdinal("JsonArrayValue")));
+                }
             });
         }
 
@@ -190,6 +203,12 @@ namespace Google.Cloud.Spanner.Data.IntegrationTests
                 { "NumericArrayValue", SpannerDbType.ArrayOf(SpannerDbType.Numeric), new SpannerNumeric[0] }
             };
 
+            // The emulator doesn't yet support the JSON type.
+            if (!_fixture.RunningOnEmulator)
+            {
+                parameters.Add("JsonArrayValue", SpannerDbType.ArrayOf(SpannerDbType.Json), new string[0]);
+            }
+
             Assert.Equal(1, await InsertAsync(parameters));
             await WithLastRowAsync(reader =>
             {
@@ -202,6 +221,11 @@ namespace Google.Cloud.Spanner.Data.IntegrationTests
                     new DateTime[] { }, reader.GetFieldValue<DateTime[]>(reader.GetOrdinal("TimestampArrayValue")));
                 Assert.Equal(new DateTime[] { }, reader.GetFieldValue<DateTime[]>(reader.GetOrdinal("DateArrayValue")));
                 Assert.Equal(new SpannerNumeric[] { }, reader.GetFieldValue<SpannerNumeric[]>(reader.GetOrdinal("NumericArrayValue")));
+                if (!_fixture.RunningOnEmulator)
+                {
+                    Assert.Equal(new SpannerNumeric[] { }, reader.GetFieldValue<SpannerNumeric[]>(reader.GetOrdinal("NumericArrayValue")));
+                    Assert.Equal(new string[] { }, reader.GetFieldValue<string[]>(reader.GetOrdinal("JsonArrayValue")));
+                }
             });
         }
 
@@ -249,6 +273,13 @@ namespace Google.Cloud.Spanner.Data.IntegrationTests
                 { "NumericArrayValue", SpannerDbType.ArrayOf(SpannerDbType.Numeric), null }
             };
 
+            // The emulator doesn't yet support the JSON type.
+            if (!_fixture.RunningOnEmulator)
+            {
+                parameters.Add("JsonValue", SpannerDbType.Json, null);
+                parameters.Add("JsonArrayValue", SpannerDbType.ArrayOf(SpannerDbType.Json), null);
+            }
+
             Assert.Equal(1, await InsertAsync(parameters));
             await WithLastRowAsync(reader =>
             {
@@ -268,6 +299,11 @@ namespace Google.Cloud.Spanner.Data.IntegrationTests
                 Assert.True(reader.IsDBNull(reader.GetOrdinal("TimestampArrayValue")));
                 Assert.True(reader.IsDBNull(reader.GetOrdinal("DateArrayValue")));
                 Assert.True(reader.IsDBNull(reader.GetOrdinal("NumericArrayValue")));
+                if (!_fixture.RunningOnEmulator)
+                {
+                    Assert.True(reader.IsDBNull(reader.GetOrdinal("JsonValue")));
+                    Assert.True(reader.IsDBNull(reader.GetOrdinal("JsonArrayValue")));
+                }
             });
         }
 

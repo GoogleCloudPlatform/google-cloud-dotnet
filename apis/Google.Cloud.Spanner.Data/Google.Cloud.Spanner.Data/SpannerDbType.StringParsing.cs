@@ -47,6 +47,7 @@ namespace Google.Cloud.Spanner.Data
                 case TypeCode.Date:
                 case TypeCode.String:
                 case TypeCode.Bytes:
+                case TypeCode.Json:
                 case TypeCode.Numeric:
                     if (!string.IsNullOrEmpty(remainder))
                     {
