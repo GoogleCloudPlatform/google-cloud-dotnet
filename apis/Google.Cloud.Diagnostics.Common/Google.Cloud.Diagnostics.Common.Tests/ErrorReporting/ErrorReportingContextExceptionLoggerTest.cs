@@ -16,6 +16,7 @@ using Google.Cloud.ClientTesting;
 using Google.Cloud.Logging.Type;
 using Google.Cloud.Logging.V2;
 using Google.Protobuf.WellKnownTypes;
+using Moq;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -34,8 +35,19 @@ namespace Google.Cloud.Diagnostics.Common.Tests
         private const string _method = "GET";
         private const string _uri = "https://google.com/";
         private const string _userAgent = "user-agent";
+        private const string _traceId = "trace-id";
+        private const ulong _spanId = 1;
 
         private static readonly bool _isWindows = TestEnvironment.IsWindows();
+
+        public ErrorReportingContextExceptionLoggerTest()
+        {
+            var tracerMock = new Mock<IManagedTracer>(MockBehavior.Strict);
+
+            tracerMock.Setup(t => t.GetCurrentTraceId()).Returns(_traceId);
+            tracerMock.Setup(t => t.GetCurrentSpanId()).Returns(_spanId);
+            ContextTracerManager.SetCurrentTracer(tracerMock.Object);
+        }
 
         [Fact]
         public void Log()
@@ -43,9 +55,9 @@ namespace Google.Cloud.Diagnostics.Common.Tests
             var options = ErrorReportingOptions.Create(
                 EventTarget.ForLogging("pid", loggingClient: new ThrowingLoggingClient()));
             var consumer = new FakeConsumer();
-            
+
             IContextExceptionLogger logger = new ErrorReportingContextExceptionLogger(
-                consumer, _service, _version, options);
+                consumer, _service, _version, options, null);
             logger.Log(CreateException(), new FakeContextWrapper());
 
             ValidateSingleEntry(consumer, _method, _uri, _userAgent, options);
@@ -59,7 +71,7 @@ namespace Google.Cloud.Diagnostics.Common.Tests
             var consumer = new FakeConsumer();
 
             IContextExceptionLogger logger = new ErrorReportingContextExceptionLogger(
-                 consumer, _service, _version, options);
+                 consumer, _service, _version, options, null);
             logger.Log(CreateException(), new EmptyContextWrapper());
 
             ValidateSingleEntry(consumer, "", "", "", options);
@@ -74,7 +86,7 @@ namespace Google.Cloud.Diagnostics.Common.Tests
             var consumer = new FakeConsumer();
 
             IContextExceptionLogger logger = new ErrorReportingContextExceptionLogger(
-                consumer, _service, _version, options);
+                consumer, _service, _version, options, null);
             await logger.LogAsync(CreateException(), new FakeContextWrapper());
 
             ValidateSingleEntry(consumer, _method, _uri, _userAgent, options);
@@ -115,6 +127,10 @@ namespace Google.Cloud.Diagnostics.Common.Tests
             var serviceContext = json["serviceContext"]?.StructValue?.Fields;
             Assert.Equal(_service, serviceContext["service"].StringValue);
             Assert.Equal(_version, serviceContext["version"].StringValue);
+
+            Assert.Contains(_traceId, entry.Trace);
+            Assert.Equal($"{_spanId:x16}", entry.SpanId);
+            Assert.True(entry.TraceSampled);
         }
 
         /// <summary>Create a thrown exception with message.</summary>
