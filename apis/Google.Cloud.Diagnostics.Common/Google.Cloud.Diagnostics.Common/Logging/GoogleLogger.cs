@@ -124,7 +124,7 @@ namespace Google.Cloud.Diagnostics.Common
 
                 _ambientScopeManager.GetCurrentScope()?.ApplyTo(entry);
                 GoogleLoggerScope.Current?.ApplyTo(entry);
-                SetTraceAndSpanIfAny(entry);
+                entry.SetTraceAndSpanIfAny(_traceTarget, _serviceProvider, _obsoleteTraceContextGetter);
 
                 _consumer.Receive(new[] { entry });
             }
@@ -192,33 +192,6 @@ namespace Google.Cloud.Diagnostics.Common
                     return iterator.MoveNext();
                 }
             }
-        }
-
-        private void SetTraceAndSpanIfAny(LogEntry entry)
-        {
-            if (_traceTarget is null)
-            {
-                return;
-            }
-
-            // If there's currently a Google trace and span use that one.
-            // This means that the Google Trace component of the diagnostics library
-            // has been initialized.
-            // Else attempt to use an external trace context.
-            if ((ContextTracerManager.GetCurrentTraceContext() ?? _serviceProvider?.GetService<ITraceContext>()) is ITraceContext context
-                && context.TraceId is string)
-            {
-
-                entry.Trace = _traceTarget.GetFullTraceName(context.TraceId);
-                entry.TraceSampled = context.ShouldTrace ?? false;
-                entry.SpanId = SpanIdToHex(context.SpanId);
-            }
-            else
-            {
-                _obsoleteTraceContextGetter?.Invoke(_serviceProvider, entry, _traceTarget);
-            }
-
-            static string SpanIdToHex(ulong? spanId) => spanId is null ? null : $"{spanId:x16}";
         }
 
         /// <summary>
