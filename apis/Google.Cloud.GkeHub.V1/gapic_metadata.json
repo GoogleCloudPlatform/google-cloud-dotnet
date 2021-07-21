@@ -1,0 +1,84 @@
+{
+  "schema": "1.0",
+  "comment": "This file maps proto services/RPCs to the corresponding library clients/methods",
+  "language": "csharp",
+  "protoPackage": "google.cloud.gkehub.v1",
+  "libraryPackage": "Google.Cloud.GkeHub.V1",
+  "services": {
+    "GkeHub": {
+      "clients": {
+        "grpc": {
+          "libraryClient": "GkeHubClient",
+          "rpcs": {
+            "CreateFeature": {
+              "methods": [
+                "CreateFeature",
+                "CreateFeatureAsync"
+              ]
+            },
+            "CreateMembership": {
+              "methods": [
+                "CreateMembership",
+                "CreateMembershipAsync"
+              ]
+            },
+            "DeleteFeature": {
+              "methods": [
+                "DeleteFeature",
+                "DeleteFeatureAsync"
+              ]
+            },
+            "DeleteMembership": {
+              "methods": [
+                "DeleteMembership",
+                "DeleteMembershipAsync"
+              ]
+            },
+            "GenerateConnectManifest": {
+              "methods": [
+                "GenerateConnectManifest",
+                "GenerateConnectManifestAsync"
+              ]
+            },
+            "GetFeature": {
+              "methods": [
+                "GetFeature",
+                "GetFeatureAsync"
+              ]
+            },
+            "GetMembership": {
+              "methods": [
+                "GetMembership",
+                "GetMembershipAsync"
+              ]
+            },
+            "ListFeatures": {
+              "methods": [
+                "ListFeatures",
+                "ListFeaturesAsync"
+              ]
+            },
+            "ListMemberships": {
+              "methods": [
+                "ListMemberships",
+                "ListMembershipsAsync"
+              ]
+            },
+            "UpdateFeature": {
+              "methods": [
+                "UpdateFeature",
+                "UpdateFeatureAsync"
+              ]
+            },
+            "UpdateMembership": {
+              "methods": [
+                "UpdateMembership",
+                "UpdateMembershipAsync"
+              ]
+            }
+          }
+        }
+      }
+    }
+  }
+}

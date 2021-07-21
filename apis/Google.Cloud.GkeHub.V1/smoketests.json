@@ -1,0 +1,9 @@
+[
+  {
+    "method": "ListMemberships",
+    "client": "GkeHubClient",
+    "arguments": {
+      "parent": "projects/${PROJECT_ID}/locations/global"
+    }
+  }
+]

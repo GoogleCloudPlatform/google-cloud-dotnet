@@ -1,0 +1,6 @@
+{
+  "distribution_name": "Google.Cloud.GkeHub.V1",
+  "release_level": "beta",
+  "client_documentation": "https://cloud.google.com/dotnet/docs/reference/Google.Cloud.GkeHub.V1/latest",
+  "library_type": "GAPIC_AUTO"
+}

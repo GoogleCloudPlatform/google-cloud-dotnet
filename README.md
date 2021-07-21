@@ -78,7 +78,8 @@ Each package name links to the documentation for that package.
 | [Google.Cloud.Gaming.V1](https://googleapis.dev/dotnet/Google.Cloud.Gaming.V1/1.1.0) | 1.1.0 | [Game Services](https://cloud.google.com/solutions/gaming) |
 | [Google.Cloud.Gaming.V1Beta](https://googleapis.dev/dotnet/Google.Cloud.Gaming.V1Beta/1.0.0-beta07) | 1.0.0-beta07 | [Google Cloud for Games](https://cloud.google.com/solutions/gaming) |
 | [Google.Cloud.GkeConnect.Gateway.V1Beta1](https://googleapis.dev/dotnet/Google.Cloud.GkeConnect.Gateway.V1Beta1/1.0.0-beta01) | 1.0.0-beta01 | [Connect Gateway](https://cloud.google.com/anthos/multicluster-management/gateway/) |
-| [Google.Cloud.GkeHub.V1Beta1](https://googleapis.dev/dotnet/Google.Cloud.GkeHub.V1Beta1/1.0.0-beta02) | 1.0.0-beta02 | [GKE Hub](https://cloud.google.com/anthos/multicluster-management/connect/registering-a-cluster) |
+| [Google.Cloud.GkeHub.V1Beta1](https://googleapis.dev/dotnet/Google.Cloud.GkeHub.V1Beta1/1.0.0-beta02) | 1.0.0-beta02 | [GKE Hub (V1Beta1 API)](https://cloud.google.com/anthos/multicluster-management/connect/registering-a-cluster) |
+| [Google.Cloud.GkeHub.V1](https://googleapis.dev/dotnet/Google.Cloud.GkeHub.V1/1.0.0-beta01) | 1.0.0-beta01 | [GKE Hub (V1 API)](https://cloud.google.com/anthos/multicluster-management/connect/registering-a-cluster) |
 | [Google.Cloud.Iam.Admin.V1](https://googleapis.dev/dotnet/Google.Cloud.Iam.Admin.V1/1.0.0) | 1.0.0 | [Identity and Access Management (IAM)](https://cloud.google.com/iam/docs) |
 | [Google.Cloud.Iam.Credentials.V1](https://googleapis.dev/dotnet/Google.Cloud.Iam.Credentials.V1/1.1.0) | 1.1.0 | [IAM Service Account Credentials](https://cloud.google.com/iam/docs/reference/credentials/rest) |
 | [Google.Cloud.Iam.V1](https://googleapis.dev/dotnet/Google.Cloud.Iam.V1/2.2.0) | 2.2.0 | [Google Cloud Identity and Access Management (IAM)](https://cloud.google.com/iam/) |

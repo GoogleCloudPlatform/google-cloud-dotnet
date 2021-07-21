@@ -1256,6 +1256,24 @@
       "protoPath": "google/cloud/gkehub/v1beta1"
     },
     {
+      "id": "Google.Cloud.GkeHub.V1",
+      "version": "1.0.0-beta01",
+      "type": "grpc",
+      "productName": "GKE Hub",
+      "productUrl": "https://cloud.google.com/anthos/multicluster-management/connect/registering-a-cluster",
+      "description": "Recommended Google client library to access the GKE Hub API, version v1.",
+      "tags": [
+        "gke",
+        "cluster",
+        "anthos"
+      ],
+      "dependencies": {
+        "Google.LongRunning": "2.2.0"
+      },
+      "generator": "micro",
+      "protoPath": "google/cloud/gkehub/v1"
+    },
+    {
       "id": "Google.Cloud.Iam.Admin.V1",
       "version": "1.0.0",
       "type": "grpc",

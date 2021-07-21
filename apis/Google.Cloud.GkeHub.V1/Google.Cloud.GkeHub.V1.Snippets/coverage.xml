@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<CoverageParams>
+  <TargetExecutable>C:/Program Files/dotnet/dotnet.exe</TargetExecutable>
+  <TargetArguments>test --no-build -c Release</TargetArguments>
+  <Filters>
+    <IncludeFilters>
+      <FilterEntry>
+        <ModuleMask>Google.Cloud.GkeHub.V1</ModuleMask>
+      </FilterEntry>
+    </IncludeFilters>
+  </Filters>
+  <AttributeFilters>
+    <AttributeFilterEntry>System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute</AttributeFilterEntry>
+    <AttributeFilterEntry>System.Diagnostics.DebuggerNonUserCodeAttribute</AttributeFilterEntry>
+  </AttributeFilters>
+  <TargetWorkingDir>.</TargetWorkingDir>
+  <Output>../../../coverage/Google.Cloud.GkeHub.V1.Snippets.dvcr</Output>
+</CoverageParams>
