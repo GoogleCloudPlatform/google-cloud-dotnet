@@ -39,16 +39,25 @@ namespace Google.Cloud.Diagnostics.Common
 
         private readonly ErrorReportingOptions _options;
 
+        private readonly IServiceProvider _serviceProvider;
+
+        /// <summary>The trace target or null if non exists.</summary>
+        private readonly TraceTarget _traceTarget;
+
         internal ErrorReportingContextExceptionLogger(
-            IConsumer<LogEntry> consumer, string serviceName, string version, ErrorReportingOptions options)
+            IConsumer<LogEntry> consumer, string serviceName, string version, ErrorReportingOptions options, IServiceProvider serviceProvider)
         {
             _consumer = GaxPreconditions.CheckNotNull(consumer, nameof(consumer));
             _options = GaxPreconditions.CheckNotNull(options, nameof(options));
             var eventTarget = options.EventTarget;
             GaxPreconditions.CheckState(eventTarget.Kind == EventTargetKind.Logging, $"Invalid {nameof(EventTarget)}");
             _logName = GaxPreconditions.CheckNotNull(eventTarget.LogTarget, nameof(eventTarget.LogTarget)).GetFullLogName(eventTarget.LogName);
+            _traceTarget = _traceTarget = eventTarget.LogTarget.Kind == LogTargetKind.Project ?
+                TraceTarget.ForProject(eventTarget.LogTarget.ProjectId) : null;
 
             _serviceContext = CreateServiceContext(serviceName, version) ?? new Struct();
+
+            _serviceProvider = serviceProvider;
         }
 
         /// <summary>
@@ -57,13 +66,16 @@ namespace Google.Cloud.Diagnostics.Common
         /// <param name="projectId">The Google Cloud Platform project ID. May be null.</param>
         /// <param name="serviceName">An identifier of the service, such as the name of the executable or job. May be null.</param>
         /// <param name="version">Represents the source code version that the developer provided. May be null.</param>
+        /// <param name="serviceProvider">The service provider to obtain services from. May be null,
+        /// in which case some context information won't be added to the LogEntry.</param>
         /// <param name="options">Optional, error reporting options.</param>
-        internal static IContextExceptionLogger Create(string projectId, string serviceName, string version,
+        internal static IContextExceptionLogger Create(
+            string projectId, string serviceName, string version, IServiceProvider serviceProvider,
             ErrorReportingOptions options = null)
         {
             options = options ?? ErrorReportingOptions.Create(projectId);
             var consumer = options.CreateConsumer();
-            return new ErrorReportingContextExceptionLogger(consumer, serviceName, version, options);
+            return new ErrorReportingContextExceptionLogger(consumer, serviceName, version, options, serviceProvider);
         }
 
         /// <inheritdoc />
@@ -158,7 +170,7 @@ namespace Google.Cloud.Diagnostics.Common
                 }
             };
 
-            return new LogEntry
+            var entry = new LogEntry
             {
                 Resource = _options.EventTarget.MonitoredResource,
                 LogName = _logName,
@@ -166,6 +178,10 @@ namespace Google.Cloud.Diagnostics.Common
                 Timestamp = timestamp,
                 JsonPayload = errorEvent
             };
+
+            entry.SetTraceAndSpanIfAny(_traceTarget, _serviceProvider, null);
+
+            return entry;
         }
     }
 }

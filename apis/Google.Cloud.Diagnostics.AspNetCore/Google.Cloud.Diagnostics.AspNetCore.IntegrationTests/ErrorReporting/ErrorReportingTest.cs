@@ -13,7 +13,9 @@
 // limitations under the License.
 
 using Google.Cloud.ClientTesting;
+using Google.Cloud.Diagnostics.Common;
 using Google.Cloud.Diagnostics.Common.IntegrationTests;
+using Google.Cloud.Logging.V2;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.TestHost;
@@ -35,8 +37,9 @@ namespace Google.Cloud.Diagnostics.AspNetCore.IntegrationTests
 #endif
 {
     using static TestServerHelpers;
+    using TraceOptions = Common.TraceOptions;
 
-    public class ErrorReportingTest : IDisposable
+    public class ErrorReportingTest : IClassFixture<LogValidatingFixture>, IDisposable
     {
         private static readonly ErrorEventEntryPolling s_polling = new ErrorEventEntryPolling();
 
@@ -45,12 +48,32 @@ namespace Google.Cloud.Diagnostics.AspNetCore.IntegrationTests
         private readonly TestServer _server;
         private readonly HttpClient _client;
 
-        public ErrorReportingTest()
+        // The only way to validate trace context information on an error entry
+        // is to check the corresponding log entry.
+        private readonly LogValidatingFixture _fixture;
+
+        public ErrorReportingTest(LogValidatingFixture fixture)
         {
             _testId = IdGenerator.FromDateTime();
 
             _server = GetTestServer<ErrorReportingTestApplication>();
             _client = _server.CreateClient();
+
+            _fixture = fixture;
+
+            // The rate limiter instance is static and only set once.  If we do not reset it at the
+            // beginning of each test the qps will not change.  This is dependent on the tests not
+            // running in parallel, which they don't.
+            RateLimiter.Reset();
+        }
+
+        private void AssertTraceContext(LogEntry entry)
+        {
+            Assert.NotNull(entry.Trace);
+            Assert.NotEmpty(entry.Trace);
+            Assert.NotNull(entry.SpanId);
+            Assert.NotEmpty(entry.SpanId);
+            Assert.True(entry.TraceSampled);
         }
 
         [Fact]
@@ -62,6 +85,12 @@ namespace Google.Cloud.Diagnostics.AspNetCore.IntegrationTests
 
             var errorEvent = ErrorEventEntryVerifiers.VerifySingle(s_polling, _testId);
             ErrorEventEntryVerifiers.VerifyFullErrorEventLogged(errorEvent, _testId, nameof(ErrorReportingController.ThrowCatchLog));
+
+            _fixture.AddValidator(_testId, results =>
+            {
+                var entry = Assert.Single(results);
+                AssertTraceContext(entry);
+            });
         }
 
         [Fact]
@@ -72,6 +101,12 @@ namespace Google.Cloud.Diagnostics.AspNetCore.IntegrationTests
 
             var errorEvent = ErrorEventEntryVerifiers.VerifySingle(s_polling, _testId);
             ErrorEventEntryVerifiers.VerifyFullErrorEventLogged(errorEvent, _testId, nameof(ErrorReportingController.ThrowsException));
+
+            _fixture.AddValidator(_testId, results =>
+            {
+                var entry = Assert.Single(results);
+                AssertTraceContext(entry);
+            });
         }
 
         [Fact]
@@ -97,6 +132,12 @@ namespace Google.Cloud.Diagnostics.AspNetCore.IntegrationTests
 
             var argumentExceptionEvent = errorEvents.Where(e => e.Message.Contains(nameof(ErrorReportingController.ThrowsArgumentException))).Single();
             ErrorEventEntryVerifiers.VerifyFullErrorEventLogged(argumentExceptionEvent, _testId, nameof(ErrorReportingController.ThrowsArgumentException));
+
+            _fixture.AddValidator(_testId, results =>
+            {
+                Assert.Equal(4, results.Count);
+                Assert.All(results, AssertTraceContext);
+            });
         }
 
         public void Dispose()
@@ -111,16 +152,27 @@ namespace Google.Cloud.Diagnostics.AspNetCore.IntegrationTests
         /// </summary>
         private class ErrorReportingTestApplication : BaseStartup
         {
+            private static string ProjectId = TestEnvironment.GetTestProjectId();
+
             public override void ConfigureServices(IServiceCollection services) =>
-                base.ConfigureServices(services.AddGoogleExceptionLogging(options =>
-                {
-                    options.ProjectId = TestEnvironment.GetTestProjectId();
-                    options.ServiceName = EntryData.Service;
-                    options.Version = EntryData.Version;
-                }));
+                base.ConfigureServices(services
+                    .AddGoogleExceptionLogging(options =>
+                    {
+                        options.ProjectId = ProjectId;
+                        options.ServiceName = EntryData.Service;
+                        options.Version = EntryData.Version;
+                        // This is just so that our validator finds the log entries associated to errors.
+                        options.Options = ErrorReportingOptions.Create(EventTarget.ForLogging(ProjectId, "aspnetcore"));
+                    })
+                    .AddGoogleTrace(options =>
+                    {
+                        options.ProjectId = ProjectId;
+                        options.Options = TraceOptions.Create(
+                            double.PositiveInfinity, BufferOptions.NoBuffer(), RetryOptions.NoRetry(ExceptionHandling.Propagate));
+                    }));
 
             public override void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory) =>
-                base.Configure(app.UseGoogleExceptionLogging(), loggerFactory);
+                base.Configure(app.UseGoogleTrace().UseGoogleExceptionLogging(), loggerFactory);
         }
     }
 

@@ -59,8 +59,10 @@ namespace Google.Cloud.Diagnostics.AspNetCore
             {
                 var loggerFactory = app.ApplicationServices.GetRequiredService<ILoggerFactory>();
                 loggerFactory.AddGoogle(app.ApplicationServices, _projectId, _loggerOptions);
-                app.UseGoogleExceptionLogging();
+                // We add tracing first to the pipeline so that uncaught exceptions have trace information
+                // attached to them.
                 app.UseGoogleTrace();
+                app.UseGoogleExceptionLogging();
 
                 next(app);
             };
